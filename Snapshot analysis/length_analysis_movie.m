@@ -1,0 +1,322 @@
+close all; %closes all figures 
+clear;  %clears variables in workspace memory
+clc; % clears command window
+
+
+
+%Read in Movies of Interest   
+[movie_name] = uigetfile('*.avi', 'Select Images'); %select file or files to analyze    
+tic
+movie = VideoReader(char(movie_name));  %read in movies  
+%split_number = str2double(parameters(8,:)); %the number of sections each axis will be split into to generate the image grid.
+%split_number squared is the number of total rectangles in the grid.
+%image_width = movie.Width;  %in pixels
+%image_height = movie.Height; %in pixels
+%assert(mod(image_width,split_number)==0 & mod(image_height,split_number)==0,'Split number is not compatible with image.');  
+%image width and height in pixels must be divisible by the split_number 
+frame_count = movie.NumFrames;
+
+
+
+%Defining Background and Noise Filter Parameters
+parameter_q = questdlg('Choose a filter option.','Set Parameters','Filter 1 (Most Likely to Connect Filaments)','Filter 2',... 
+                      'Filter 3 (Most Likely to Separate Filaments)','Filter 1 (Most Likely to Connect Filaments)');
+if isequal(parameter_q,'Filter 3 (Most Likely to Separate Filaments)') 
+    noise_filter_base = 2; 
+    background_base = 14;
+elseif isequal(parameter_q, 'Filter 2')  
+    noise_filter_base = 5;
+    background_base = 35; 
+elseif isequal(parameter_q, 'Filter 1 (Most Likely to Connect Filaments)') 
+    noise_filter_base = 7;
+    background_base = 63; 
+else 
+     error('You must answer the question to proceed with analysis.')
+end
+noise_filter_stdev = noise_filter_base/7;
+background_stdev = background_base/7;    
+
+%To get the Signal - Background Measurement: Background is calculated separately  
+%for each section to enhance accuracy of bundle calculations.  
+%Below is where you set how big you want the section to be. The width of the original
+%image in pixels must be divisble by this number or it will throw an error.
+%section_pixel_width = 50; 
+
+%Do you want to quantify bundling
+%bundling_q = questdlg('Would you like to quantify bundling?','Bundle Quantification','Skip Bundle Quantification',...
+                      %'Quantify Bundling','Skip Bundle Quantification');   
+                  %Skip bundle quantification is here twice because it is set as the default answer  
+
+%initialize analysis variables 
+%all_num_bundles = zeros(num_snapshots(1),1);     
+color_options = repmat(['y';'m';'c';'w'],4);   
+%when correcting filament errors, color_options are the colors that will be used to label different segments
+%full_perimeter_list=zeros(2000,num_snapshots(1)); 
+%total_num_objects = zeros(num_snapshots(1),1); 
+%num_bundles = zeros(num_snapshots(1),1); 
+%average_lengths_per_FOV = zeros(num_snapshots(1),1); 
+
+
+%for m = 1:2   %for each image that you selected
+%Image Processing
+file = readFrame(movie);
+%file =strtrim(file); 
+%original_image = imread(file);  %reads in the original image 
+original_image = im2gray(file); %if your image has an rbg value, uncomment this line. 
+doubled_image = double(original_image);
+my_noise_filter = fspecial('gaussian',noise_filter_base,noise_filter_stdev);  %make the noise filter
+noise_filtered_image = imfilter(doubled_image,my_noise_filter, 'symmetric');  %apply the noise filter to the image
+my_background_filter = fspecial('gaussian',background_base,background_stdev); %make the background filter
+background_image = imfilter(doubled_image,my_background_filter,'symmetric'); %make the background image
+processed_image = noise_filtered_image - background_image;   %subtract the background from the noise filtered image 
+max_sub = max(processed_image(:)); min_sub = min(processed_image(:)); 
+norm_image = (processed_image - min_sub)./(max_sub-min_sub);  %normalizes the image so all intensity values are between 0 and 1  
+threshold_mask = graythresh(norm_image);  %threshold the image     
+BW_image = imbinarize(norm_image,threshold_mask); %convert to black and white  
+%BW_image_clear_border= imclearborder(BW_image); skeleton = bwskel(BW_image_clear_border);  
+%can uncomment the above line of code to clear objects touching the
+%border if needed. Need to Comment out the line below if you do intend to use this function 
+skeleton = bwskel(BW_image); %makes skeleton from binary image  
+og_skeleton = skeleton; %needed for background calculations in bundling quantification
+
+%getting information from the processed image 
+skeleton_stats=regionprops(skeleton,'Centroid','PixelIdxList','PixelList','BoundingBox','Perimeter');  
+%obtains binary skeletonized image values for each of these properties and puts values into a structure.  
+original_perimeters = cat(1,skeleton_stats.Perimeter);  %moves perimeters out of the structure and into a list  
+original_perimeters(original_perimeters==0)=0.98;  
+%filaments with an area of 1 have their perimeters approximated as 0 but perimeter = 0.98 is more accurate 
+%0.98 was obtained by working backwards from the perimeter of an object with an area of 2.
+num_objects = length(skeleton_stats);  
+boxes= cat(1,skeleton_stats.BoundingBox); %moves them out of the structure and into a list. 
+% BoundingBox gives [leftmost coordinate of box, topmost coordinate of box, width, height]
+
+
+% For Error Correction Part: Segments the skeletonized image by  removing the crossover point (called
+% branched point by matlab). Segments are known as branches to matlab but
+% they are not actually branches, they are just regions of overlap 
+branchpoints=bwmorph(skeleton,'branchpoints'); %finds branchpoint of skeleton
+new_skel_branches = skeleton & ~branchpoints;   
+%removes branchpoints from skeleton, resulting in different segments forming their own filament
+branches_props = regionprops(new_skel_branches, 'Perimeter','PixelIdxList','PixelList');  
+%finds the properties of each branch
+branches_og_perimeters = cat(1,branches_props.Perimeter); %gets branch perimeters out of a structure and into a list 
+branches_og_perimeters(branches_og_perimeters==0)=0.98;  
+%segments aka branches with an area of 1 have their perimeters approximated as 0 but perimeter = 0.98 is more accurate 
+%0.98 was obtained by working backwards from the perimeter of an object with an area of 2.
+num_branches=length(branches_props);  
+excluded_count = 0; %tracks the number of segments excluded from analysis  
+excluded_perimeters=zeros(num_branches,1); %list of excluded perimeters here 
+new_perimeters = zeros(num_branches,1);% new perimeters of edited objects
+standalone_filaments = zeros(num_branches,1); % branch numbers of standalone filaments will be stored here 
+multi_part_filaments = zeros(num_branches,2); % branch numbers of muli_part filaments will be stored here 
+branches_pixels_mat = pixel_struct_to_mat(num_branches,branches_props); % reformat branch pixel matrix
+
+matrix_pixels = pixel_struct_to_mat(num_objects,skeleton_stats); %reformat pixel structure to matrix,cuts down on loops. 
+
+
+%display figures  
+analysis_fig = figure('Position', [0 0 1440 900]); 
+original_fig = subplot(1,2,1); 
+imshow(original_image,[],'InitialMagnification','fit'); title('Original Image','FontSize',24); %shows original image
+image_analysis_figure=subplot(1,2,2);imshow(skeleton,[],'InitialMagnification','fit');hold on; %shows analysis image 
+title("Detected Objects",'FontSize',24);   
+
+%automatically identifies problem_filaments  
+[problem_indices] = identify_problem_filaments(skeleton);   
+
+%label filaments that have been identified with either red or green  
+plot(matrix_pixels(problem_indices,1:2:end),matrix_pixels(problem_indices,2:2:end),'r.','MarkerSize',8);   
+% labeled red if they have been identified as a "problem" filament
+no_prob_obj = setdiff(1:num_objects,problem_indices);
+plot(matrix_pixels(no_prob_obj,1:2:end),matrix_pixels(no_prob_obj,2:2:end),'g.','MarkerSize',8);    
+% labeled green for the non-problem fialments 
+
+%manually flagging other problem filaments
+xlabel({'Please click on additional mistakes.';'Press return or enter when finished.'},'FontSize',16,'FontWeight','bold');   
+answer='No';  
+user_clicked_problem_indices=zeros(1,num_objects); 
+%want to avoid changing matrix size each iteration, so vector is larger than necessary 
+while ismember(answer,'No')  
+    [og_x,og_y]=myginput(1,'arrow');  % gets the coordinates of the user click. 
+while length(og_x)==1   % will exit loop when the user does not click on anything (presses enter instead)
+            closest_object = closest_to_click(og_x,og_y, matrix_pixels); %finds object closest to click
+            if isempty(closest_object)   %If the user fails to click close enough to an object, the program allows you to click again
+                xlabel({'No filament selected.';'Try clicking again.'},'FontSize',16,'FontWeight','bold'); 
+                [og_x,og_y]=myginput(1,'arrow'); 
+            elseif ismember(closest_object,user_clicked_problem_indices)||ismember(closest_object,problem_indices) 
+               % this part allows a user to remove a problem object from
+               % the problem filament list i.e., unclick a red filament and
+               % turn it back to green
+                     plot(matrix_pixels(closest_object,1:2:end), matrix_pixels(closest_object,2:2:end),'g.','MarkerSize',8);
+                     user_clicked_problem_indices(user_clicked_problem_indices==closest_object)= 0; 
+                     problem_indices(problem_indices==closest_object)= 0; 
+                     [og_x,og_y]=myginput(1,'arrow');  %user continues clicking
+                     
+            else %user clicks an object that was not already on the problem filament list 
+                     plot(matrix_pixels(closest_object,1:2:end), matrix_pixels(closest_object,2:2:end),'r.','MarkerSize',8);  
+                     %turns filament red  
+                     user_clicked_problem_indices(closest_object)= closest_object;  
+                     [og_x,og_y]=myginput(1,'arrow'); %user continues clicking 
+            end   
+            xlabel({'Please click on additional mistakes.';'Press return or enter when finished.'},'FontSize',16,'FontWeight','bold');   
+end 
+answer=questdlg('Done finding the mistakes?'); 
+% this dialog box makes sure user is done. If not, then they can click no and continue clicking
+end  
+ 
+user_clicked_problem_indices(user_clicked_problem_indices==0)=[]; %removes extra zeros 
+problem_indices(problem_indices==0)= []; %removes extra zeros 
+problem_indices= sort([problem_indices,user_clicked_problem_indices]);  
+%sorts the problem indices into ascending order. Error correction will move in a logical order.
+no_prob_obj = setdiff(1:num_objects,problem_indices);
+%done finding problem filaments
+
+%manually resolving filaments to fix mistakes  
+
+%cycle through problem_filaments
+for i = 1:length(problem_indices) 
+    box_coord =  [boxes(problem_indices(i),1)-12,boxes(problem_indices(i),2)-12,boxes(problem_indices(i),3)+20,boxes(problem_indices(i),4)+20];
+    branches_of_interest = highlight_branches(boxes,skeleton_stats,problem_indices(i),num_branches,branches_pixels_mat);  
+    branches_of_interest_pixels = branches_pixels_mat(branches_of_interest, :);
+    xlabel({'Click on a segment in the box to edit filament.';'Click outside the box to remove the labeled segments from analysis.'},... 
+            'FontSize',16,'FontWeight','bold');  
+    [og_x,og_y]=myginput(1,'arrow'); 
+    while isempty(og_x)
+      xlabel({'You did not click on a segment.';'Click on a segment in the box to edit filament.';'Click outside the box to remove the labeled segments from analysis.'},... 
+            'FontSize',16,'FontWeight','bold');  
+    end 
+    while length(og_x)==1
+        clicked_branch_idx = closest_to_click(og_x,og_y,branches_of_interest_pixels);  
+        clicked_branch = branches_of_interest(clicked_branch_idx); 
+        if isempty(clicked_branch) && og_x < box_coord(1) + box_coord(3) && og_x > box_coord(1)... 
+            && og_y < box_coord(2) + box_coord(4) && og_y > box_coord(2) 
+                xlabel({'You did not click on a new segment.';... 
+                'Click on a segment in the box to edit filament.';'Click outside the box to remove the labeled segments from analysis.'},... 
+                'FontSize',16,'FontWeight','bold');   
+                [og_x,og_y] = myginput(1,'arrow');    
+                continue;
+        elseif isempty(clicked_branch) 
+                excluded_count = excluded_count + 1 ;
+                excluded_perimeters(excluded_count) = original_perimeters(problem_indices(i)); 
+                branches_of_interest =[]; 
+                skeleton(skeleton_stats(problem_indices(i)).PixelIdxList)=0; 
+        else  
+                plot(branches_pixels_mat(clicked_branch,1:2:end),branches_pixels_mat(clicked_branch,2:2:end),'g.','MarkerSize',8);  
+                xlabel({'Press key to specify edit.';'Esc: Segment should be removed from analysis.';... 
+                '1: Segment is a stand-alone filament';'2: Segment is part of another filament.'},...
+                'FontSize',16,'FontWeight','bold'); 
+                skeleton(branches_props(clicked_branch).PixelIdxList)=0;  
+                skeleton(intersect(find(branchpoints),skeleton_stats(problem_indices(i)).PixelIdxList))= 0; 
+                key_press =getkey;  
+                switch key_press 
+                   case 27 %delete segment 
+                    excluded_count = excluded_count + 1;  
+                    excluded_perimeters(excluded_count) = branches_og_perimeters(clicked_branch); 
+                    branches_of_interest(branches_of_interest == clicked_branch) =[];
+                   case 49 %standalone segment            
+                    new_perimeters(clicked_branch) = branches_og_perimeters(clicked_branch); 
+                    standalone_filaments(clicked_branch) = clicked_branch;  
+                   case 50 %multi-segmentfilament 
+                    [new_multi_perimeters, skeleton,multi_branch_fil] = resolve_multisegment_fil(clicked_branch,branches_pixels_mat,... 
+                                                                        branches_of_interest,branches_of_interest_pixels, ... 
+                                                                        branches_props,branches_og_perimeters,skeleton); 
+                multi_part_filaments(clicked_branch,1:10) = multi_branch_fil;  
+                new_perimeters(clicked_branch) = new_multi_perimeters;
+                otherwise 
+                xlabel({'Key Not Valid. Press valid key to specify edit.';'Esc: Segment should be removed from analysis.';... 
+                '1: Segment is a stand-alone filament';'2: Segment is part of another filament.'},...
+                'FontSize',16,'FontWeight','bold'); 
+                key_press = getkey;  
+                end     
+        end 
+     clf(original_fig);
+     subplot(1,2,2);imshow(skeleton,[],'InitialMagnification','fit');hold on; title("Detected Objects",'FontSize',24);
+     new_skeleton_stats = regionprops(skeleton,'PixelList','PixelIdxList');   
+     plot(matrix_pixels(no_prob_obj,1:2:end),matrix_pixels(no_prob_obj,2:2:end),'g.','MarkerSize',8);   
+     remaining_problem_indices = problem_indices(i+1:end);
+     plot(matrix_pixels(remaining_problem_indices,1:2:end),matrix_pixels(remaining_problem_indices,2:2:end),'r.','MarkerSize',8);   
+       if any(standalone_filaments)  
+          plot(nonzeros(branches_pixels_mat(nonzeros(standalone_filaments),1:2:end)),... 
+          nonzeros(branches_pixels_mat(nonzeros(standalone_filaments),2:2:end)),'g.','MarkerSize',8);     
+       end 
+       if any(nonzeros(multi_part_filaments)) 
+            plot(nonzeros(branches_pixels_mat(nonzeros(multi_part_filaments),1:2:end)),... 
+            nonzeros(branches_pixels_mat(nonzeros(multi_part_filaments),2:2:end)),'g.','MarkerSize', 8); 
+       end
+   edited_branches= unique([clicked_branch;standalone_filaments; multi_part_filaments(:)]);  
+   edited_branches(edited_branches==0)=[];
+   remaining_branches = setdiff(branches_of_interest,edited_branches);
+       if isempty(remaining_branches)  
+             og_x =[]; 
+       else   
+           for n = 1:length(remaining_branches)
+             plot(branches_pixels_mat(remaining_branches(n),1:2:end),branches_pixels_mat(remaining_branches(n),2:2:end),... 
+             strcat(color_options(n),'.'),'MarkerSize',8);     
+           end
+             branches_of_interest_pixels = branches_pixels_mat(remaining_branches, :); 
+             branches_of_interest = remaining_branches;
+             xlabel({'Click on a segment in the box to edit filament.';'Click outside the box to remove the remaining segments from analysis.'},... 
+                    'FontSize',16,'FontWeight','bold');   
+             rectangle('Position',[boxes(problem_indices(i),1)-12,boxes(problem_indices(i),2)-12,... 
+             boxes(problem_indices(i),3)+20,boxes(problem_indices(i),4)+20],'EdgeColor','w','LineWidth',2);    
+             [og_x,og_y] = myginput(1,'arrow');   
+       end  
+     end
+end    
+
+%perimeter
+edited_skeleton_stats=regionprops(skeleton,'Perimeter','PixelList');  
+perimeters=cat(1,edited_skeleton_stats.Perimeter);     
+perimeters(perimeters==0)=0.98;    
+new_perimeters(new_perimeters==0) = [];
+final_num_objects = length(perimeters)+ length(new_perimeters);
+full_perimeter_list(1:final_num_objects,m) = [perimeters;new_perimeters];  
+total_num_objects(m)=final_num_objects; 
+
+
+ 
+%end 
+
+xlabel(''); title('Corrected Detected Objects');  
+excluded_perimeters(excluded_perimeters==0)=[];    
+lengths_pixels= full_perimeter_list/2;
+lengths_micrometers = lengths_pixels * 0.2667;     
+
+%for m = 1:num_snapshots  
+    %average_lengths_per_FOV(m) = mean(nonzeros(lengths_micrometers(:,m)));
+%end  
+%average_lengths_per_FOV(1:num_snapshots) = mean(nonzeros(lengths_micrometers(:,1:num_snapshots)));
+
+%converts perimeters into one list and converts form pixels to micrometers
+full_perimeter_list = reshape(full_perimeter_list,[],1); 
+full_perimeter_list(full_perimeter_list==0)=[]; 
+lengths_pixels= full_perimeter_list/2;
+lengths_micrometers = lengths_pixels*0.2667; 
+lengths_of_excluded_filaments= (excluded_perimeters/2) * 0.2667;  
+percent_excluded_from_analysis = ((sum(lengths_of_excluded_filaments)/(sum(lengths_micrometers)+ sum(lengths_of_excluded_filaments)))*100);
+round_percent_excluded_from_analysis=round(percent_excluded_from_analysis,1); 
+%the above three lines helps
+average_length=mean(lengths_micrometers); 
+average_length=round(average_length,2); 
+% makes histogram of filament lengths from all the movies.
+fig = figure;%h= histogram(lengths_micrometers,10,'normalization','probability');title('Distribution of Filament Lengths','FontSize',24);  
+h=histogram(lengths_micrometers,10,'normalization','probability');title('Distribution of Filament Lengths','FontSize',24);
+fig.Position = [440 378 640 420];
+axes = gca; 
+axes.FontSize = 25;  
+axes.FontWeight ='bold';
+axes.LineWidth = 2; 
+xlabel('Length (\mum)','FontSize',24,'FontWeight','bold'); 
+ylabel('Relative Frequency','FontSize',24,'FontWeight','bold'); 
+txt = ['Average Length: ' num2str(average_length) ' \mum']; 
+xcoord=max(lengths_micrometers)/3;
+ycoord=max(h.Values)*0.75;
+text(xcoord,ycoord,txt,'FontSize',25,'FontWeight','bold');  
+%if you want to know the percentage of filamentus length excluded from
+%analysis:
+%txt2=['Length Excluded From Analysis: ' num2str(percent_excluded_from_analysis) ' %'];  
+%text(xcoord,ycoord-(0.10*(ycoord)),txt2,'FontSize',12); 
+
+%make table of number of objects and number of bundles 
+
+%num_summary(num_snapshots,total_num_objects,all_num_bundles);
