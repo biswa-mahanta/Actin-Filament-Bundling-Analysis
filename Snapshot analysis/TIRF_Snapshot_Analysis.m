@@ -288,7 +288,7 @@ xcoord=max(lengths_micrometers)/3;
 ycoord=max(h.Values)*0.75;
 text(xcoord,ycoord,txt,'FontSize',25,'FontWeight','bold');
 
-fprintf(fid, 'file %d  ', m);
+fprintf(fid, 'snapshot %d  ', m);
 fprintf(fid, '%f    ', lengths_micrometers);
 fprintf(fid, '\n');
 
