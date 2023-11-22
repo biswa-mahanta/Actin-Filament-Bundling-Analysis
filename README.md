@@ -21,7 +21,7 @@
       <a href="#getting-started">Getting Started</a>
       <ul>
         <li><a href="#prerequisites">Prerequisites</a></li>
-        <li><a href="#installation">Toolbox Installation</a></li>
+        <li><a href="#installation">Installation</a></li>
       </ul>
     </li>
     <li><a href="#usage">Usage</a></li>
@@ -57,7 +57,7 @@ To use the codes, the entire repository can be downloaded from the "code" dropdo
 MATLAB by Mathworks needs to be installed and activated.
 * Link to download MATLAB - https://www.mathworks.com/downloads/
   
-### Toolbox Installation
+### Installation
 
 MATLAB needs to be configured with several add-on Toolboxes
 1. Image Acquisition Toolbox
