@@ -21,7 +21,7 @@
       <a href="#getting-started">Getting Started</a>
       <ul>
         <li><a href="#prerequisites">Prerequisites</a></li>
-        <li><a href="#toolbox installation">Installation</a></li>
+        <li><a href="#toolbox installation">Toolbox Installation</a></li>
       </ul>
     </li>
     <li><a href="#usage">Usage</a></li>
@@ -57,7 +57,7 @@ To use the codes, the entire repository can be downloaded from the "code" dropdo
 MATLAB by Mathworks needs to be installed and activated.
 * Link to download MATLAB
   ```sh
-  (https://www.mathworks.com/downloads/)
+  https://www.mathworks.com/downloads/
   ```
   
 ### Toolbox Installation
