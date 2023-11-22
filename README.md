@@ -44,7 +44,7 @@ The two MATLAB codes are designed to enable user-assisted automated quantificati
 
 ### Built With
 
-* **MATLAB by MATHWORKS**
+* **MATLAB by Mathworks**
 
 
 <!-- GETTING STARTED -->
