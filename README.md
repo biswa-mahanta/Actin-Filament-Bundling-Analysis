@@ -38,8 +38,8 @@
 ## About The Project
 
 The two MATLAB codes are designed to enable user-assisted automated quantification of actin filament properties using single-molecule micrographs. 
-* The Filament Length Anlysis program is designed to quantify the lengths of individual Actin filaments present in the micrograph.
-* The Bundle Analysis program is designed to quantify actin filament crosslinking in a time-lapse movie.
+* The *Filament Length Analysis* program is designed to quantify the lengths of individual actin filaments present in the micrograph.
+* The *Bundle Analysis* program is designed to quantify actin filament crosslinking in a time-lapse movie.
 
 
 ### Built With
@@ -70,7 +70,7 @@ MATLAB needs to be configured with several add-on Toolboxes
 <!-- USAGE EXAMPLES -->
 ## Usage
 
-To fine tune the usage of these codes for your need, please go through the *User Manual*.
+Use the sample images/movies to trial run the code in your system. To further fine tune the usage of these codes for your need, please go through the *User Manual*.
 
 For more examples on the application of these programs, you may refer to these publications -
 1. Sherer, L. A., & Courtemanche, N. (2022). Cooperative bundling by fascin generates actin structures with architectures that depend on filament length. Frontiers in Cell and Developmental Biology, 10, 974047.
