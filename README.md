@@ -47,7 +47,7 @@ The two MATLAB codes are designed to enable user-assisted automated quantificati
 
 ### Built With
 
-* [![MATLAB][MATLAB]]
+* [![MATLAB][matlab.mathworks.com]][matlab-url]
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
