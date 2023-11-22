@@ -72,7 +72,7 @@ MATLAB needs to be configured with several add-on Toolboxes
 
 To fine tune the usage of these codes for your need, please go through the *User Manual*.
 
-_For more examples on the application of these programs, you may refer to these publications -
+For more examples on the application of these programs, you may refer to these publications -
 1. Sherer, L. A., & Courtemanche, N. (2022). Cooperative bundling by fascin generates actin structures with architectures that depend on filament length. Frontiers in Cell and Developmental Biology, 10, 974047.
    https://doi.org/10.3389/fcell.2022.974047
 3. Zweifel, M. E., Sherer, L. A., Mahanta, B., & Courtemanche, N. (2021). Nucleation limits the lengths of actin filaments assembled by formin. Biophysical journal, 120(20), 4442-4456.
