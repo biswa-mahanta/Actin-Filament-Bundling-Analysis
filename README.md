@@ -38,8 +38,8 @@
 ## About The Project
 
 The two MATLAB codes are designed to enable user-assisted automated quantification of actin filament properties using single-molecule micrographs. 
-* The *Filament Length Analysis* program is designed to quantify the lengths of individual actin filaments present in the micrograph.
 * The *Bundle Analysis* program is designed to quantify actin filament crosslinking in a time-lapse movie.
+* The *Filament Length Quantification* program is designed to quantify the lengths of individual actin filaments present in the micrograph.
 
 
 ### Built With
