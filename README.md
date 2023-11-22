@@ -50,7 +50,7 @@ The two MATLAB codes are designed to enable user-assisted automated quantificati
 <!-- GETTING STARTED -->
 ## Getting Started
 
-To use the codes, the entire repository can be downloaded from the <Code> dropdown menu. Please save them in an accessible location in your computer.
+To use the codes, the entire repository can be downloaded from the "code" dropdown menu. Please save them in an accessible location in your computer.
 
 ### Prerequisites
 
