@@ -105,7 +105,7 @@ Distributed under the UMN License. See `LICENSE.txt` for more information.
 
 Biswa Mahanta - (www.linkedin.com/in/biswa-mahanta) - biswaprakash2006rta@gmail.com
 
-Project Link: [[https://github.com/your_username/repo_name](https://github.com/biswa-mahanta/Actin-Filament-Bundling-Analysis.git)]([https://github.com/your_username/repo_name](https://github.com/biswa-mahanta/Actin-Filament-Bundling-Analysis.git))
+Project Link: https://github.com/biswa-mahanta/Actin-Filament-Bundling-Analysis.git
 
 
 
