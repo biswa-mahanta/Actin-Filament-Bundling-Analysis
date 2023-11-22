@@ -64,7 +64,7 @@ To get a local copy up and running follow these simple example steps.
 MATLAB by Mathworks needs to be installed and activated.
 * Link to download MATLAB
   ```sh
-  [https://login.mathworks.com/embedded-login/landing.html?cid=getmatlab](https://www.mathworks.com/downloads/)
+  [https://www.mathworks.com/downloads/](https://www.mathworks.com/downloads/)
   ```
   
 ### Toolbox Installation
