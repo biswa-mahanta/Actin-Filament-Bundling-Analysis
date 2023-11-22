@@ -55,10 +55,7 @@ To use the codes, the entire repository can be downloaded from the "code" dropdo
 ### Prerequisites
 
 MATLAB by Mathworks needs to be installed and activated.
-* Link to download MATLAB
-  ```sh
-  https://www.mathworks.com/downloads/
-  ```
+* Link to download MATLAB - https://www.mathworks.com/downloads/
   
 ### Toolbox Installation
 
