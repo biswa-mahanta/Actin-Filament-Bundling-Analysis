@@ -41,23 +41,16 @@ The two MATLAB codes are designed to enable user-assisted automated quantificati
 * The Filament Length Anlysis program is designed to quantify the lengths of individual Actin filaments present in the micrograph.
 * The Bundle Analysis program is designed to quantify actin filament crosslinking in a time-lapse movie.
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-
 
 ### Built With
 
-* [![MATLAB][matlab.mathworks.com]][MATLAB-url]
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
+* **MATLAB by MATHWORKS**
 
 
 <!-- GETTING STARTED -->
 ## Getting Started
 
-This is an example of how you may give instructions on setting up your project locally.
-To get a local copy up and running follow these simple example steps.
+To use the codes, the entire repository can be downloaded from the <Code> dropdown menu. Please save them in an accessible location in your computer.
 
 ### Prerequisites
 
@@ -75,17 +68,18 @@ MATLAB needs to be configured with several add-on Toolboxes
 3. Signal Processing Toolbox
 4. Curve Fitting Toolbox
 
-* To install add-ons, in MATLAB go to the home tab and click on "Get Add-Ons" 
+* To install add-ons, in MATLAB go to the home tab and in the Add-Ons dropdown menu click on "Get Add-Ons". Here you can search for specific toolboxes and install them.
 
 <!-- USAGE EXAMPLES -->
 ## Usage
 
-Use this space to show useful examples of how a project can be used. Additional screenshots, code examples and demos work well in this space. You may also link to more resources.
+To fine tune the usage of these codes for your need, please go through the *User Manual*.
 
-_For more examples, please refer to the [Documentation](https://example.com)_
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
+_For more examples on the application of these programs, you may refer to these publications -
+1. Sherer, L. A., & Courtemanche, N. (2022). Cooperative bundling by fascin generates actin structures with architectures that depend on filament length. Frontiers in Cell and Developmental Biology, 10, 974047.
+   https://doi.org/10.3389/fcell.2022.974047
+3. Zweifel, M. E., Sherer, L. A., Mahanta, B., & Courtemanche, N. (2021). Nucleation limits the lengths of actin filaments assembled by formin. Biophysical journal, 120(20), 4442-4456.
+   https://doi.org/10.1016/j.bpj.2021.09.003
 
 
 <!-- CONTRIBUTING -->
@@ -101,27 +95,20 @@ If you have a suggestion that would make this better, please fork the repository
 4. Push to the Branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-
 
 <!-- LICENSE -->
 ## License
 
 Distributed under the UMN License. See `LICENSE.txt` for more information.
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
 
 
 <!-- CONTACT -->
 ## Contact
 
-Biswa Mahanta - [LinkedIn](www.linkedin.com/in/biswa-mahanta) - biswaprakash2006rta@gmail.com
+Biswa Mahanta - (www.linkedin.com/in/biswa-mahanta) - biswaprakash2006rta@gmail.com
 
 Project Link: [[https://github.com/your_username/repo_name](https://github.com/biswa-mahanta/Actin-Filament-Bundling-Analysis.git)]([https://github.com/your_username/repo_name](https://github.com/biswa-mahanta/Actin-Filament-Bundling-Analysis.git))
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 
 
