@@ -26,9 +26,7 @@
     </li>
     <li><a href="#usage">Usage</a></li>
     <li><a href="#contributing">Contributing</a></li>
-    <li><a href="#license">License</a></li>
     <li><a href="#contact">Contact</a></li>
-    <li><a href="#acknowledgments">Acknowledgments</a></li>
   </ol>
 </details>
 
@@ -41,6 +39,7 @@ The two MATLAB codes are designed to enable user-assisted automated quantificati
 * The *Bundle Analysis* program is designed to quantify actin filament crosslinking in a time-lapse movie.
 * The *Filament Length Quantification* program is designed to quantify the lengths of individual actin filaments present in the micrograph.
 
+The work is supported by NIH and by the Genetics and Cell Biology department of University of Minnesota, Twin-cities.
 
 ### Built With
 
@@ -93,12 +92,6 @@ If you have a suggestion that would make this better, please fork the repository
 5. Open a Pull Request
 
 
-<!-- LICENSE -->
-## License
-
-Distributed under the UMN License. See `LICENSE.txt` for more information.
-
-
 
 <!-- CONTACT -->
 ## Contact
@@ -107,12 +100,6 @@ Biswa Mahanta - (www.linkedin.com/in/biswa-mahanta) - biswaprakash2006rta@gmail.
 
 Project Link: https://github.com/biswa-mahanta/Actin-Filament-Bundling-Analysis.git
 
-
-
-<!-- ACKNOWLEDGMENTS -->
-## Acknowledgments
-
-Use this space to list resources you find helpful and would like to give credit to. I've included a few of my favorites to kick things off!
 
 
 
